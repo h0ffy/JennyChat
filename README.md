@@ -18,9 +18,9 @@ A modern AI chat interface that connects to LLama-Cpp Server API with real-time 
 
 ### Prerequisites
 
-1. **LLama-Cpp Server**: You need to have a LLama-Cpp Server running on `http://localhost:8080`
+1. **LLama-Cpp Server**: You need to have a LLama-Cpp Server running on `http://127.0.0.1:8080`
    - Download from: https://github.com/ggerganov/llama.cpp
-   - Run with: `./server -m your-model.gguf --host 0.0.0.0 --port 8080`
+   - Run with: `./server -m your-model.gguf --host 127.0.0.1 --port 8080`
 
 ### Backend Setup
 
