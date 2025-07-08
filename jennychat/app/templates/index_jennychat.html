@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purple Network - AI Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "htmx.org": "https://unpkg.com/htmx.org@1.9.10",
+                "marked": "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js"
+            }
+        }
+    </script>
+</head>
+<body>
+    <canvas id="neuralCanvas"></canvas>
+
+    <div id="dashboardTitle">Purple Network AI Chat</div>
+
+    <div id="mainLayoutContainer">
+        <div id="chatHistoryCard" class="info-card" style="width: 38%;"> 
+            <div class="card-title">
+                <span>Chat History</span>
+                <button id="newChatButton" title="New Chat">💬</button>
+            </div>
+            <div class="card-content" style="display: flex; flex-direction: column; height: calc(100% - 40px);">
+                <div id="chatListContainer" 
+                     hx-get="/api/chats" 
+                     hx-trigger="load" 
+                     hx-target="#chatList">
+                    <ul id="chatList">
+                        <!-- Chat sessions will be loaded from backend -->
+                    </ul>
+                </div>
+                <div class="chat-actions">
+                    <button title="New Chat" id="newChatActionBtn">💬</button>
+                    <button title="Export Chat" id="exportChatActionBtn">📤</button>
+                    <button title="Import Chat" id="importChatActionBtn">📥</button>
+                    <button title="Search Chats" id="searchChatActionBtn">🔎</button>
+                    <button title="Delete Chat" id="deleteChatActionBtn">🗑</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatInterfaceCard" class="info-card" style="width: 62%;"> 
+            <div class="card-title">
+                <span id="chatInterfaceTitle">AI Assistant</span>
+                <div class="chat-main-controls" style="display: flex;">
+                    <label title="Stream Response" class="custom-checkbox-label">
+                        🌊 <input type="checkbox" id="streamToggle" checked>
+                    </label>
+                    <button title="Clear Chat" id="clearChatButton" class="editor-control-button">🗑️</button>
+                    <button title="Save Chat" id="saveChatButton" class="editor-control-button">💾</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="chatMessagesContainer">
+                    <div id="chatMessages">
+                        <div class="welcome-message">
+                            <p>Welcome to Purple Network AI Chat! Start a conversation with the AI assistant.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chatInputContainer">
+                    <div id="chatInputArea">
+                        <textarea id="messageInput" placeholder="Type your message here..." rows="3"></textarea>
+                        <div class="chat-input-controls">
+                            <button id="sendButton" title="Send Message">📤</button>
+                            <button id="voiceButton" title="Voice Input">🎤</button>
+                            <select id="modelSelect" title="Select Model">
+                                <option value="default">Default Model</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
