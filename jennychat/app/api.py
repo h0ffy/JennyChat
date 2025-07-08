@@ -10,7 +10,7 @@ from datetime import datetime
 import uuid
 from pathlib import Path
 
-app = FastAPI(title="Purple Network AI Chat", version="1.0.0")
+app = FastAPI(title="Jenny AI Chat", version="1.0.0")
 
 # Configuration
 LLAMA_CPP_SERVER_URL = "http://localhost:8080"  # Default LLama-Cpp Server URL
@@ -47,7 +47,7 @@ chat_sessions: Dict[str, ChatSession] = {}
 
 @app.get("/")
 async def root():
-    return {"message": "Purple Network AI Chat API"}
+    return {"message": "Jenny AI Chat API"}
 
 @app.get("/api/chats")
 async def get_chats():
