@@ -1,7 +1,7 @@
 # Jenny Purple Network Chat AI
 A modern AI chat interface that connects to LLama-Cpp Server API with real-time streaming support.
 
-## ![Alt text](jennychat.png)
+## ![JennyChat](jennychat.gif)
 
 
 
