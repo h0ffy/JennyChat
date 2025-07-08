@@ -9,7 +9,7 @@ import asyncio
 from datetime import datetime
 import uuid
 from pathlib import Path
-from conf import LLAMA_CPP_SERVER_URL
+from app.conf import LLAMA_CPP_SERVER_URL
 
 
 app = FastAPI(title="Jenny AI Chat", version="1.0.0")
