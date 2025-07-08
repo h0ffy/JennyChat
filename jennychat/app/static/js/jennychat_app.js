@@ -347,7 +347,7 @@ class ChatManager {
 
             this.currentChatId = null;
             this.elements.chatTitle.textContent = 'AI Assistant';
-            this.elements.chatMessages.innerHTML = '<div class="welcome-message"><p>Welcome to Purple Network AI Chat! Start a conversation with the AI assistant.</p></div>';
+            this.elements.chatMessages.innerHTML = '<div class="welcome-message"><p>JennyLab AI Chat! Start a conversation with the AI assistant.</p></div>';
             
             this.loadChats();
             this.showNotification('Chat deleted', 'success');
