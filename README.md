@@ -28,7 +28,7 @@ A modern AI chat interface that connects to LLama-Cpp Server API with real-time 
 ```bash
 python -m venv .venv
 
-# Purple Network AI Chat
+# JennyLab AI Chat
 
 source .venv/bin/activate
 pip install -r requirements.txt
