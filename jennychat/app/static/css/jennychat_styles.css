@@ -34,11 +34,13 @@ canvas {
     display: flex;
     flex-wrap: nowrap; 
     justify-content: center;
+    align-items: flex-start;
     gap: 25px; 
     padding: 20px;
     width: 90%;
     max-width: 1600px; 
     z-index: 10;
+    margin: 0 auto;
 }
 
 .info-card {
@@ -198,12 +200,18 @@ canvas {
 
 .tabs {
     display: flex;
-    margin-bottom: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
     border-bottom: 1px solid #6a44ff;
+    background-color: rgba(51, 51, 77, 0.3);
+    border-radius: 10px 10px 0 0;
+    padding: 10px;
+    width: 90%;
+    max-width: 1600px;
 }
 
 .tab-button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     cursor: pointer;
     background-color: transparent;
     border: none;
@@ -211,7 +219,8 @@ canvas {
     font-size: 16px;
     font-family: 'Courier New', Courier, monospace;
     transition: background-color 0.2s ease, color 0.2s ease;
-    border-bottom: 3px solid transparent;
+    border-radius: 8px;
+    margin: 0 5px;
 }
 
 .tab-button:hover {
@@ -220,22 +229,67 @@ canvas {
 
 .tab-button.active {
     color: #fff;
-    border-bottom: 3px solid #8a63d2;
+    background-color: rgba(138, 99, 210, 0.3);
     font-weight: bold;
 }
 
 .tab-content {
     display: none;
-    height: calc(100% - 40px);
+    width: 100%;
 }
 
 .tab-content.active {
     display: block;
 }
 
+#markdownLayoutContainer, #codeLayoutContainer {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 25px;
+    padding: 20px;
+    width: 90%;
+    max-width: 1600px;
+    z-index: 10;
+    margin: 0 auto;
+}
+
+#markdownFileContainer, #codeFileContainer {
+    max-height: 420px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#markdownFileList, #codeFileList {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 0;
+}
+
+#markdownFileList li, #codeFileList li {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(172, 139, 255, 0.25);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 16px;
+    color: #d1c7ff;
+}
+
+#markdownFileList li:hover, #codeFileList li:hover {
+    background-color: rgba(172, 139, 255, 0.15);
+    color: #ffffff;
+}
+
+#markdownFileList li.selected-file, #codeFileList li.selected-file {
+    background-color: rgba(172, 139, 255, 0.25);
+    color: #ffffff;
+    font-weight: bold;
+}
+
 #markdownEditorArea {
     width: calc(100% - 30px);
-    height: 450px;
+    height: 400px;
     background-color: rgba(0,0,0,0.25);
     border: 1px solid rgba(172, 139, 255, 0.35);
     border-radius: 8px;
@@ -245,6 +299,12 @@ canvas {
     font-size: 14px;
     line-height: 1.5;
     resize: vertical;
+}
+
+#markdownEditorArea:focus {
+    outline: none;
+    border-color: #8a63d2;
+    box-shadow: 0 0 5px rgba(138, 99, 210, 0.3);
 }
 
 #markdownPreviewArea, #nonMdPreviewContainer {
@@ -606,4 +666,50 @@ canvas {
     outline: none;
     border-color: #8a63d2;
     box-shadow: 0 0 5px rgba(138, 99, 210, 0.3);
+}
+
+#codeEditorContainer {
+    height: 450px;
+    border: 1px solid rgba(172, 139, 255, 0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #282c34;
+}
+
+.cm-editor {
+    height: 100% !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 14px !important;
+}
+
+.cm-content {
+    padding: 10px !important;
+    min-height: 400px !important;
+}
+
+.cm-focused {
+    outline: none !important;
+}
+
+.cm-scroller {
+    height: 100% !important;
+}
+
+#fallbackCodeEditor {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: #282c34 !important;
+    color: #abb2bf !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 14px !important;
+    border: none !important;
+    outline: none !important;
+    padding: 10px !important;
+    resize: none !important;
+    line-height: 1.5 !important;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
