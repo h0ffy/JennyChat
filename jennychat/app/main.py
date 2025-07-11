@@ -9,13 +9,11 @@ import asyncio
 from datetime import datetime
 import uuid
 from pathlib import Path
-from app.conf import LLAMA_CPP_SERVER_URL
-
 
 app = FastAPI(title="Jenny AI Chat", version="1.0.0")
 
 # Configuration
-
+LLAMA_CPP_SERVER_URL = "http://localhost:8080"  # Default LLama-Cpp Server URL
 CHAT_HISTORY_DIR = Path("chat_history")
 CHAT_HISTORY_DIR.mkdir(exist_ok=True)
 
@@ -49,7 +47,7 @@ chat_sessions: Dict[str, ChatSession] = {}
 
 @app.get("/")
 async def root():
-    return {"message": "Jenny AI Chat API"}
+    return {"message": "JennyNet AI Chat API"}
 
 @app.get("/api/chats")
 async def get_chats():
