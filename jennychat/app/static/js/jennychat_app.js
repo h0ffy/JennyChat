@@ -1,8 +1,8 @@
 import 'htmx.org';
-import { ChatManager } from './js/chat-manager.js';
-import { EditorManager } from './js/editor-manager.js';
-import { UIManager } from './js/ui-manager.js';
-import { setupGlobalFunctions } from './js/global-functions.js';
+import { ChatManager } from './js/jennychat_manager.js';
+import { EditorManager } from './js/jennychat_editor.js';
+import { UIManager } from './js/jennychat_ui.js';
+import { setupGlobalFunctions } from './js/jennychat_global.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
