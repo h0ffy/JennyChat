@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, HTTPException, Query, FastAPI, Request, Form
+from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import httpx
@@ -9,11 +11,29 @@ import asyncio
 from datetime import datetime
 import uuid
 from pathlib import Path
+import os, sys
+
 
 app = FastAPI(title="Jenny AI Chat", version="1.0.0")
 
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Montar frontend estático
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+
+
+
+
+
 # Configuration
-LLAMA_CPP_SERVER_URL = "http://localhost:8080"  # Default LLama-Cpp Server URL
+LLAMA_CPP_SERVER_URL = "http://10.69.69.9:8080"  # Default LLama-Cpp Server URL
 CHAT_HISTORY_DIR = Path("chat_history")
 CHAT_HISTORY_DIR.mkdir(exist_ok=True)
 
@@ -44,10 +64,22 @@ class ChatSession(BaseModel):
 
 # In-memory storage for chat sessions (replace with database in production)
 chat_sessions: Dict[str, ChatSession] = {}
-
+"""
 @app.get("/")
 async def root():
     return {"message": "JennyNet AI Chat API"}
+"""
+
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse(
+        "index_jennychat.html",
+        {"request": request}
+    )
+
+
+
+
 
 @app.get("/api/chats")
 async def get_chats():
@@ -261,4 +293,4 @@ async def update_chat_title(chat_id: str, title: dict):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8888)

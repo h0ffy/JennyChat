@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JennyLab - AI Chat</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/jennychat_styles.css') }}">
     <script type="importmap">
         {
             "imports": {
@@ -192,7 +192,8 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="{{ url_for('static', path='js/jennychat_script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', path='js/jennychat_app.js') }}"></script>
+
 </body>
 </html>
