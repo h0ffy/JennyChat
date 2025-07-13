@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JennyLab - AI Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/jennychat_styles.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', path='css/jennychat_styles.css') }}">
     <script type="importmap">
         {
             "imports": {
@@ -31,7 +31,8 @@
     <div id="dashboardTitle">JennyLab AI Chat</div>
 
     <div class="tabs">
-        <button class="tab-button active" data-tab="chat">💬 Chat</button>
+        <button class="tab-button active" data-tab="chat">💬 AI Chat</button>
+        <button class="tab-button" data-tab="collaborative">👥 Collaborative Chat</button>
         <button class="tab-button" data-tab="markdown">📝 Markdown</button>
         <button class="tab-button" data-tab="code">💻 Code</button>
     </div>
@@ -77,7 +78,7 @@
                     <div id="chatMessagesContainer">
                         <div id="chatMessages">
                             <div class="welcome-message">
-                                <p>Welcome to Purple Network AI Chat! Start a conversation with the AI assistant.</p>
+                                <p>Welcome to JennyLab AI Chat! Start a conversation with the AI assistant.</p>
                             </div>
                         </div>
                     </div>
@@ -90,6 +91,70 @@
                                 <select id="modelSelect" title="Select Model">
                                     <option value="default">Default Model</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="collaborative-tab" class="tab-content">
+        <div id="collaborativeLayoutContainer">
+            <div id="collaborativeRoomsCard" class="info-card" style="width: 38%;">
+                <div class="card-title">
+                    <span>Chat Rooms</span>
+                    <button id="newRoomButton" title="Create Room">🏠</button>
+                </div>
+                <div class="card-content" style="display: flex; flex-direction: column; height: calc(100% - 40px);">
+                    <div id="userInfoSection" style="padding: 10px; border-bottom: 1px solid #6a44ff; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <label for="usernameInput" style="color: #c5aeff;">Username:</label>
+                            <input type="text" id="usernameInput" placeholder="Enter your name" 
+                                   style="background-color: rgba(0,0,0,0.25); border: 1px solid rgba(172, 139, 255, 0.35); 
+                                          border-radius: 5px; color: #e0e0e0; padding: 5px 10px; font-family: 'Courier New', Courier, monospace;">
+                        </div>
+                        <div style="font-size: 12px; color: #8a63d2;">
+                            Status: <span id="connectionStatus">Disconnected</span>
+                        </div>
+                    </div>
+                    <div id="roomListContainer">
+                        <ul id="roomList">
+                            <!-- Rooms will be loaded dynamically -->
+                        </ul>
+                    </div>
+                    <div class="room-actions">
+                        <button title="Create Room" id="createRoomBtn">🏠</button>
+                        <button title="Join Room" id="joinRoomBtn">🚪</button>
+                        <button title="Leave Room" id="leaveRoomBtn">🚫</button>
+                        <button title="Room Settings" id="roomSettingsBtn">⚙️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collaborativeChatCard" class="info-card" style="width: 62%;">
+                <div class="card-title">
+                    <span id="collaborativeChatTitle">Select a Room</span>
+                    <div class="collaborative-controls">
+                        <span id="userCount" style="color: #8a63d2; font-size: 14px;">0 users</span>
+                        <button title="Room Info" id="roomInfoButton" class="editor-control-button">ℹ️</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="collaborativeMessagesContainer">
+                        <div id="collaborativeMessages">
+                            <div class="welcome-message">
+                                <p>Welcome to Collaborative Chat! Join or create a room to start chatting with other users.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="collaborativeInputContainer">
+                        <div id="collaborativeInputArea">
+                            <textarea id="collaborativeMessageInput" placeholder="Type your message here..." rows="3" disabled></textarea>
+                            <div class="collaborative-input-controls">
+                                <button id="collaborativeSendButton" title="Send Message" disabled>📤</button>
+                                <button id="collaborativeEmojiButton" title="Add Emoji" disabled>😊</button>
+                                <button id="collaborativeFileButton" title="Share File" disabled>📎</button>
                             </div>
                         </div>
                     </div>
@@ -192,8 +257,39 @@
         </div>
     </div>
 
+    <!-- Room Creation Modal -->
+    <div id="roomModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Room</h3>
+                <button id="closeModalBtn" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="roomNameInput">Room Name:</label>
+                    <input type="text" id="roomNameInput" placeholder="Enter room name" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label for="roomDescInput">Description (optional):</label>
+                    <textarea id="roomDescInput" placeholder="Room description" rows="3" maxlength="200"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="roomPrivateCheck"> Private Room
+                    </label>
+                    <small style="color: #8a63d2; display: block; margin-top: 5px;">
+                        Private rooms require an invitation to join
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelRoomBtn" class="btn-secondary">Cancel</button>
+                <button id="createRoomConfirmBtn" class="btn-primary">Create Room</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', path='js/jennychat_script.js') }}"></script>
     <script type="module" src="{{ url_for('static', path='js/jennychat_app.js') }}"></script>
-
 </body>
 </html>

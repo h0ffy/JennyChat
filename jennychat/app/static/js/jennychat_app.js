@@ -1,14 +1,16 @@
 import 'htmx.org';
-import { ChatManager } from './js/jennychat_manager.js';
-import { EditorManager } from './js/jennychat_editor.js';
-import { UIManager } from './js/jennychat_ui.js';
-import { setupGlobalFunctions } from './js/jennychat_global.js';
+import { ChatManager } from './chat-manager.js';
+import { EditorManager } from './editor-manager.js';
+import { UIManager } from './ui-manager.js';
+import { CollaborativeManager } from './collaborative-manager.js';
+import { setupGlobalFunctions } from './global-functions.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     const uiManager = new UIManager();
     const chatManager = new ChatManager();
     const editorManager = new EditorManager();
+    const collaborativeManager = new CollaborativeManager();
     
     // Setup global functions
     setupGlobalFunctions(editorManager);
@@ -17,4 +19,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.chatManager = chatManager;
     window.editorManager = editorManager;
     window.uiManager = uiManager;
+    window.collaborativeManager = collaborativeManager;
 });

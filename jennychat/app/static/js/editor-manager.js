@@ -11,11 +11,10 @@ export class EditorManager {
             'todo.md': '# TODO\n\n- [ ] Task 1\n- [ ] Task 2\n- [x] Completed task'
         };
         this.codeFiles = {
-            'app.js': 'console.log("Hello, World!");\n\nfunction greet(name) {\n    return `Hello, ${name}!`;\n}\n\n// Add your JavaScript code here\nconst data = {\n    name: "Purple Network",\n    version: "1.0.0"\n};\n\ngreet(data.name);',
+            'app.js': 'console.log("Hello, World!");\n\nfunction greet(name) {\n    return `Hello, ${name}!`;\n}\n\n// Add your JavaScript code here\nconst data = {\n    name: "JennyLab",\n    version: "1.0.0"\n};\n\ngreet(data.name);',
             'api.py': 'from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get("/")\ndef read_root():\n    return {"Hello": "World"}\n\n@app.get("/items/{item_id}")\ndef read_item(item_id: int, q: str = None):\n    return {"item_id": item_id, "q": q}',
             'styles.css': 'body {\n    margin: 0;\n    padding: 0;\n    font-family: Arial, sans-serif;\n    background-color: #1a1a2e;\n}\n\n.container {\n    max-width: 1200px;\n    margin: 0 auto;\n    padding: 20px;\n}\n\n.card {\n    background-color: rgba(51, 51, 77, 0.85);\n    border-radius: 10px;\n    padding: 20px;\n}',
-            'index.html': '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Purple Network</title>\n    <link rel="stylesheet" href="styles.css">\n</head>\n<body>\n    <div class="container">\n        <h1>Hello, World!</h1>\n        <p>Welcome to Purple Network AI Chat</p>\n    </div>\n    <script src="app.js"></script>\n</body>\n</html>',
-            'example.cpp': '#include <string>\nusign namespace std;\nint main() {\nstd::cout << "Hello kitty!!!!" << std::endl;\n}'
+            'index.html': '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>JennyLab</title>\n    <link rel="stylesheet" href="styles.css">\n</head>\n<body>\n    <div class="container">\n        <h1>Hello, World!</h1>\n        <p>Welcome to JennyLab AI Chat</p>\n    </div>\n    <script src="app.js"></script>\n</body>\n</html>'
         };
         this.setupEditors();
     }
@@ -99,8 +98,6 @@ export class EditorManager {
             const { python } = await import('codemirror/lang-python');
             const { css } = await import('codemirror/lang-css');
             const { html } = await import('codemirror/lang-html');
-            const { cpp } = await import('codemirror/lang-cpp');
-            const { c } = await import('codemirror/lang-c');
             const { oneDark } = await import('codemirror/theme-one-dark');
             const { defaultKeymap, history, historyKeymap } = await import('codemirror/commands');
             const { searchKeymap } = await import('codemirror/search');
@@ -116,7 +113,7 @@ export class EditorManager {
 
             // Create the editor state
             const startState = EditorState.create({
-                doc: this.codeFiles['static/js/jennychat_app.js'],
+                doc: this.codeFiles['app.js'],
                 extensions: [
                     highlightSpecialChars(),
                     history(),
@@ -161,7 +158,7 @@ export class EditorManager {
             });
 
             // Set current file and update title
-            this.currentCodeFile = 'test.js';
+            this.currentCodeFile = 'app.js';
             const title = document.getElementById('codeEditorTitle');
             if (title) {
                 title.textContent = `Code Editor - app.js`;
@@ -171,7 +168,7 @@ export class EditorManager {
             this.setupCodeEditorControls();
 
             // Load default file selection
-            const defaultFile = document.querySelector('#codeFileList li[data-file="static/js/jennychat_app.js"]');
+            const defaultFile = document.querySelector('#codeFileList li[data-file="app.js"]');
             if (defaultFile) {
                 this.selectCodeFile(defaultFile);
             }

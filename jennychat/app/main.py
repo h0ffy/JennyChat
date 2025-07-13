@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query, FastAPI, Request, Form
+
+from fastapi import FastAPI, HTTPException, Query, FastAPI, Request, Form, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -12,7 +13,7 @@ from datetime import datetime
 import uuid
 from pathlib import Path
 import os, sys
-
+from app.conf import *
 
 app = FastAPI(title="Jenny AI Chat", version="1.0.0")
 
@@ -24,16 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Montar frontend estático
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 
-
-
-
-# Configuration
-LLAMA_CPP_SERVER_URL = "http://10.69.69.9:8080"  # Default LLama-Cpp Server URL
+# Configurations
 CHAT_HISTORY_DIR = Path("chat_history")
 CHAT_HISTORY_DIR.mkdir(exist_ok=True)
 
@@ -62,23 +60,79 @@ class ChatSession(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+# Collaborative chat models
+class CollaborativeMessage(BaseModel):
+    id: str
+    roomId: str
+    userId: str
+    username: str
+    content: str
+    timestamp: datetime
+
+class CollaborativeRoom(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = ""
+    private: bool = False
+    created_at: datetime
+
+    created_by: str
+
+class ConnectedUser(BaseModel):
+    userId: str
+    username: str
+    websocket: WebSocket
+    currentRoom: Optional[str] = None
+    model_config = {"arbitrary_types_allowed": True}
+
+
 # In-memory storage for chat sessions (replace with database in production)
 chat_sessions: Dict[str, ChatSession] = {}
-"""
-@app.get("/")
-async def root():
-    return {"message": "JennyNet AI Chat API"}
-"""
+
+# Collaborative chat storage
+collaborative_rooms: Dict[str, CollaborativeRoom] = {}
+collaborative_messages: Dict[str, List[CollaborativeMessage]] = {}
+connected_users: Dict[str, ConnectedUser] = {}
+room_users: Dict[str, List[str]] = {}  # roomId -> list of userIds
+
+# WebSocket connection manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+
+    async def send_personal_message(self, message: dict, user_id: str):
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_text(json.dumps(message))
+            except:
+                self.disconnect(user_id)
+
+    async def broadcast_to_room(self, message: dict, room_id: str, exclude_user: str = None):
+        if room_id in room_users:
+            for user_id in room_users[room_id]:
+                if user_id != exclude_user and user_id in self.active_connections:
+                    try:
+                        await self.active_connections[user_id].send_text(json.dumps(message))
+                    except:
+                        self.disconnect(user_id)
+
+manager = ConnectionManager()
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse(
-        "index_jennychat.html",
+        "jennychat_index.html",
         {"request": request}
     )
-
-
-
+  
 
 
 @app.get("/api/chats")
@@ -291,6 +345,226 @@ async def update_chat_title(chat_id: str, title: dict):
     
     return {"message": "Title updated successfully"}
 
+# Collaborative chat WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    user_id = None
+    try:
+        await websocket.accept()
+        
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            
+            if message["type"] == "user_connect":
+                user_id = message["userId"]
+                username = message["username"]
+                
+                # Store user connection
+                connected_users[user_id] = ConnectedUser(
+                    userId=user_id,
+                    username=username,
+                    websocket=websocket
+                )
+                manager.active_connections[user_id] = websocket
+                
+                # Send available rooms
+                rooms_data = []
+                for room_id, room in collaborative_rooms.items():
+                    rooms_data.append({
+                        "id": room.id,
+                        "name": room.name,
+                        "description": room.description,
+                        "private": room.private,
+                        "userCount": len(room_users.get(room_id, []))
+                    })
+                
+                await manager.send_personal_message({
+                    "type": "rooms_list",
+                    "rooms": rooms_data
+                }, user_id)
+            
+            elif message["type"] == "get_rooms":
+                if user_id:
+                    rooms_data = []
+                    for room_id, room in collaborative_rooms.items():
+                        rooms_data.append({
+                            "id": room.id,
+                            "name": room.name,
+                            "description": room.description,
+                            "private": room.private,
+                            "userCount": len(room_users.get(room_id, []))
+                        })
+                    
+                    await manager.send_personal_message({
+                        "type": "rooms_list",
+                        "rooms": rooms_data
+                    }, user_id)
+            
+            elif message["type"] == "create_room":
+                if user_id and user_id in connected_users:
+                    room_id = str(uuid.uuid4())
+                    room = CollaborativeRoom(
+                        id=room_id,
+                        name=message["name"],
+                        description=message.get("description", ""),
+                        private=message.get("private", False),
+                        created_at=datetime.now(),
+                        created_by=user_id
+                    )
+                    
+                    collaborative_rooms[room_id] = room
+                    collaborative_messages[room_id] = []
+                    room_users[room_id] = []
+                    
+                    await manager.send_personal_message({
+                        "type": "room_created",
+                        "room": {
+                            "id": room.id,
+                            "name": room.name,
+                            "description": room.description,
+                            "private": room.private
+                        }
+                    }, user_id)
+            
+            elif message["type"] == "join_room":
+                if user_id and user_id in connected_users:
+                    room_id = message["roomId"]
+                    
+                    if room_id in collaborative_rooms:
+                        # Leave current room if any
+                        current_room = connected_users[user_id].currentRoom
+                        if current_room and current_room in room_users:
+                            if user_id in room_users[current_room]:
+                                room_users[current_room].remove(user_id)
+                                
+                                # Notify others in old room
+                                await manager.broadcast_to_room({
+                                    "type": "user_left",
+                                    "username": connected_users[user_id].username,
+                                    "users": [connected_users[uid].username for uid in room_users[current_room] if uid in connected_users]
+                                }, current_room, user_id)
+                        
+                        # Join new room
+                        if room_id not in room_users:
+                            room_users[room_id] = []
+                        
+                        if user_id not in room_users[room_id]:
+                            room_users[room_id].append(user_id)
+                        
+                        connected_users[user_id].currentRoom = room_id
+                        
+                        # Send room data to user
+                        room = collaborative_rooms[room_id]
+                        messages = collaborative_messages.get(room_id, [])
+                        users = [connected_users[uid].username for uid in room_users[room_id] if uid in connected_users]
+                        
+                        await manager.send_personal_message({
+                            "type": "room_joined",
+                            "room": {
+                                "id": room.id,
+                                "name": room.name,
+                                "description": room.description,
+                                "private": room.private,
+                                "created_at": room.created_at.isoformat()
+                            },
+                            "messages": [
+                                {
+                                    "id": msg.id,
+                                    "userId": msg.userId,
+                                    "username": msg.username,
+                                    "content": msg.content,
+                                    "timestamp": msg.timestamp.isoformat()
+                                } for msg in messages[-50:]  # Last 50 messages
+                            ],
+                            "users": users
+                        }, user_id)
+                        
+                        # Notify others in room
+                        await manager.broadcast_to_room({
+                            "type": "user_joined",
+                            "username": connected_users[user_id].username,
+                            "users": users
+                        }, room_id, user_id)
+            
+            elif message["type"] == "leave_room":
+                if user_id and user_id in connected_users:
+                    current_room = connected_users[user_id].currentRoom
+                    if current_room and current_room in room_users:
+                        if user_id in room_users[current_room]:
+                            room_users[current_room].remove(user_id)
+                        
+                        connected_users[user_id].currentRoom = None
+                        
+                        # Notify user
+                        await manager.send_personal_message({
+                            "type": "room_left"
+                        }, user_id)
+                        
+                        # Notify others in room
+                        users = [connected_users[uid].username for uid in room_users[current_room] if uid in connected_users]
+                        await manager.broadcast_to_room({
+                            "type": "user_left",
+                            "username": connected_users[user_id].username,
+                            "users": users
+                        }, current_room, user_id)
+            
+            elif message["type"] == "send_message":
+                if user_id and user_id in connected_users:
+                    current_room = connected_users[user_id].currentRoom
+                    if current_room:
+                        msg_id = str(uuid.uuid4())
+                        collaborative_message = CollaborativeMessage(
+                            id=msg_id,
+                            roomId=current_room,
+                            userId=user_id,
+                            username=connected_users[user_id].username,
+                            content=message["message"],
+                            timestamp=datetime.now()
+                        )
+                        
+                        if current_room not in collaborative_messages:
+                            collaborative_messages[current_room] = []
+                        
+                        collaborative_messages[current_room].append(collaborative_message)
+                        
+                        # Broadcast message to all users in room
+                        await manager.broadcast_to_room({
+                            "type": "new_message",
+                            "message": {
+                                "id": collaborative_message.id,
+                                "userId": collaborative_message.userId,
+                                "username": collaborative_message.username,
+                                "content": collaborative_message.content,
+                                "timestamp": collaborative_message.timestamp.isoformat()
+                            }
+                        }, current_room)
+            
+            elif message["type"] == "update_username":
+                if user_id and user_id in connected_users:
+                    connected_users[user_id].username = message["username"]
+    
+    except WebSocketDisconnect:
+        if user_id:
+            # Remove user from current room
+            if user_id in connected_users:
+                current_room = connected_users[user_id].currentRoom
+                if current_room and current_room in room_users:
+                    if user_id in room_users[current_room]:
+                        room_users[current_room].remove(user_id)
+                    
+                    # Notify others in room
+                    users = [connected_users[uid].username for uid in room_users[current_room] if uid in connected_users]
+                    await manager.broadcast_to_room({
+                        "type": "user_left",
+                        "username": connected_users[user_id].username,
+                        "users": users
+                    }, current_room, user_id)
+                
+                del connected_users[user_id]
+            
+            manager.disconnect(user_id)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8888)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
