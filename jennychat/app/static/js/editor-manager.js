@@ -118,7 +118,6 @@ export class EditorManager {
                     highlightSpecialChars(),
                     history(),
                     drawSelection(),
-                    //highlightSelectionMatches(),s
                     javascript(),
                     oneDark,
                     keymap.of([
