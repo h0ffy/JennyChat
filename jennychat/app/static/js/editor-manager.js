@@ -21,7 +21,7 @@ export class EditorManager {
 
     async setupEditors() {
         await this.setupMarkdownEditor();
-        await this.setupCodeEditor();
+        //await this.setupCodeEditor();
     }
 
     async setupMarkdownEditor() {
