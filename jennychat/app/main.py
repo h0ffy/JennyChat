@@ -13,9 +13,10 @@ from datetime import datetime
 import uuid
 from pathlib import Path
 import os, sys
-from app.conf import *
+from jennychat.app.conf import *
 
-app = FastAPI(title="Jenny AI Chat", version="1.0.0")
+
+app = FastAPI(title="Jenny AI Chat", version="0.0.1",docs="/docs",redoc="/redoc")
 
 # CORS
 app.add_middleware(
@@ -133,6 +134,23 @@ def index(request: Request):
         {"request": request}
     )
   
+
+@app.get("/asistant", response_class=HTMLResponse)
+def index_asistant(request: Request):
+    return templates.TemplateResponse(
+        "index_asistant.html",
+        {"request": request}
+    )
+  
+
+@app.get("/vid_analyz", response_class=HTMLResponse)
+def index_vid_analyz(request: Request):
+    return templates.TemplateResponse(
+        "index_videoanalyzer.html",
+        {"request": request}
+    )
+  
+
 
 
 @app.get("/api/chats")
